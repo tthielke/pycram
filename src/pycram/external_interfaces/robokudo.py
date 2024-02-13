@@ -13,7 +13,7 @@ from ..bullet_world import BulletWorld
 from ..enums import ObjectType
 
 try:
-    from robokudo_msgs.msg import ObjectDesignator as robokudo_ObjetDesignator
+    from robokudo_msgs.msg import ObjectDesignator as robokudo_ObjectDesignator
     from robokudo_msgs.msg import QueryAction, QueryGoal, QueryResult
 except ModuleNotFoundError as e:
     rospy.logwarn(f"Could not import RoboKudo messages, RoboKudo interface could not be initialized")
@@ -83,7 +83,7 @@ def msg_from_obj_desig(obj_desc: ObjectDesignatorDescription) -> 'robokudo_Objet
     :param obj_desc: The PyCRAM Object designator that should be converted
     :return: The RobotKudo Object Designator for the given PyCRAM designator
     """
-    obj_msg = robokudo_ObjetDesignator()
+    obj_msg = robokudo_ObjectDesignator()
     obj_msg.uid = str(id(obj_desc))
     obj_msg.type = obj_desc.types[0] # For testing purposes
 
