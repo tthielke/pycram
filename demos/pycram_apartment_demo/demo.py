@@ -5,17 +5,18 @@ from pycram.pose import Pose
 from pycram.bullet_world import BulletWorld, Object
 from pycram.process_module import simulated_robot, with_simulated_robot, real_robot
 from pycram.enums import ObjectType
-import giskard_msgs
+from pycram.external_interfaces import apartment_kitchen
 from giskardpy.python_interface import GiskardWrapper
 from pycram.ros.robot_state_updater import RobotStateUpdater
 
 world = BulletWorld()
-robot = Object("pr2", ObjectType.ROBOT, "pr2.urdf", pose=Pose([1, 2, 0]))
+robot = Object("pr2", ObjectType.ROBOT, "pr2_calibrated_with_ft.urdf", pose=Pose([1, 2, 0]))
 apartment = Object("apartment", ObjectType.ENVIRONMENT, "apartment.urdf")
 
 cereal = Object("cereal", ObjectType.BREAKFAST_CEREAL, "breakfast_cereal.stl", pose=Pose([0.3, 3.3, 1.5], [0, 0, 1, 0]), color=[0, 1, 0, 1])
 spoon = Object("spoon", ObjectType.SPOON, "spoon.stl", pose=Pose([2.4, 2.2, 0.85]), color=[0, 0, 1, 1])
 bowl = Object("bowl", ObjectType.BOWL, "bowl.stl", pose=Pose([2.5, 2.2, 1.02]), color=[1, 1, 0, 1])
+cup = Object("cup", ObjectType.JEROEN_CUP, "jeroen_cup.stl", pose=Pose([2.5, 2.2, 1.02]), color=[1, 1, 0, 1])
 apartment.attach(spoon, 'cabinet10_drawer_top')
 
 pick_pose = Pose([2.7, 2.15, 1])
@@ -65,19 +66,27 @@ with real_robot:
     # PlaceAction(spoon_desig, [spoon_target_pose], [pickup_arm]).resolve().perform()
     #
     # ParkArmsAction([Arms.BOTH]).resolve().perform()
+
+    
     #
     # apartment.set_joint_state("cabinet4_door_top_top_joint", 2)
-    #
-    # NavigateAction([Pose([1.3, 3.3, 0], [0, 0, 1, 0])]).resolve().perform()
-    #
+    # apartment_kitchen.open("Oberschrank")
+
+    
+    # NavigateAction([Pose([1.4, 3.3, 0], [0, 0, 1, 0])]).resolve().perform()
+    
     # # Detect and pickup the cereal
-    # LookAtAction([apartment.get_link_pose("cabinet4")]).resolve().perform()
-    #
-    # cereal_desig = DetectAction(BelieveObject(types=[ObjectType.BREAKFAST_CEREAL])).resolve().perform()
-    #
+    # cabinet_pose = apartment.get_link_pose("cabinet4")
+    # cabinet_pose.position.z -= 0.25
+    # LookAtAction([cabinet_pose]).resolve().perform()
+    
+    # cereal_desig = DetectAction(BelieveObject(types=[ObjectType.JEROEN_CUP])).resolve().perform()
+    
     # NavigateAction([Pose([1, 3.3, 0], [0, 0, 1, 0])]).resolve().perform()
-    #
+    
     # PickUpAction(cereal_desig, ["left"], ["front"]).resolve().perform()
+
+
     #
     # ParkArmsAction([Arms.BOTH]).resolve().perform()
     #

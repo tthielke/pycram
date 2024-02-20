@@ -39,7 +39,7 @@ def init_robokudo_interface(func: Callable) -> Callable:
             rospy.logwarn("RoboKudo is not running, could not initialize RoboKudo interface")
             return
 
-        func(*args, **kwargs)
+        return func(*args, **kwargs)
     return wrapper
 
 
@@ -133,4 +133,5 @@ def query(object_desc: ObjectDesignatorDescription) -> ObjectDesignatorDescripti
 
         pose_candidates[source] = pose
 
+    print(pose_candidates)
     return pose_candidates

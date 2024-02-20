@@ -322,7 +322,8 @@ class Pr2DetectingReal(ProcessModule):
         lt = LocalTransformer()
         obj_pose = lt.transform_pose(obj_pose, BulletWorld.robot.get_link_tf_frame("torso_lift_link"))
         obj_pose.orientation = [0, 0, 0, 1]
-        obj_pose.position.x += 0.05
+        obj_pose.position.x -= 0.1
+        #obj_pose.position.z -= 0.05
 
         bullet_obj = BulletWorld.current_bullet_world.get_objects_by_type(designator.object_type)
         if bullet_obj:
