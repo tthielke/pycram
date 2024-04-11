@@ -70,7 +70,7 @@ def initial_adding_objects() -> None:
     """
     groups = giskard_wrapper.get_group_names()
     for obj in BulletWorld.current_bullet_world.objects:
-        if obj == BulletWorld.robot:
+        if obj == BulletWorld.robot or obj.name == "floor":
             continue
         name = obj.name + "_" + str(obj.id)
         if name not in groups:
@@ -108,6 +108,9 @@ def sync_worlds() -> None:
     if not bullet_object_names.union(robot_name).issubset(giskard_object_names):
         giskard_wrapper.clear_world()
     initial_adding_objects()
+    for obj in BulletWorld.current_bullet_world.objects:
+        if obj.name != robot_description.name and obj.name != "floor":
+            update_pose(obj)
 
 
 @init_giskard_interface
@@ -134,6 +137,8 @@ def spawn_object(object: Object) -> None:
         if isinstance(geometry, urdf_parser_py.urdf.Mesh):
             filename = geometry.filename
             spawn_mesh(object.name + "_" + str(object.id), filename, object.get_pose())
+        if isinstance(geometry, urdf_parser_py.urdf.Box):
+            giskard_wrapper.add_box(object.name + "_" + str(object.id), geometry.size, object.get_pose())
     else:
         spawn_urdf(object.name + "_" + str(object.id), object.path, object.get_pose())
 

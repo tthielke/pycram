@@ -440,12 +440,14 @@ class PlaceAction(ActionDesignatorDescription):
             target_diff = self.target_location.to_transform("target").inverse_times(
                 tcp_to_object.to_transform("object")).to_pose()
 
+            BulletWorld.current_bullet_world.add_vis_axis(target_diff)
             MoveTCPMotion(target_diff, self.arm).resolve().perform()
             MoveGripperMotion("open", self.arm).resolve().perform()
             BulletWorld.robot.detach(self.object_designator.bullet_world_object)
             retract_pose = target_diff
             retract_pose.position.x -= 0.07
             MoveTCPMotion(retract_pose, self.arm).resolve().perform()
+            BulletWorld.current_bullet_world.remove_vis_axis()
 
         def to_sql(self) -> ORMPlaceAction:
             return ORMPlaceAction(self.arm)
@@ -884,17 +886,26 @@ class GraspingAction(ActionDesignatorDescription):
             lt = LocalTransformer()
             gripper_name = robot_description.get_tool_frame(self.arm)
 
-            object_pose_in_gripper = lt.transform_pose(object_pose,
-                                                       BulletWorld.robot.get_link_tf_frame(gripper_name))
+            # object_pose_in_gripper = lt.transform_pose(object_pose,
+            #                                            BulletWorld.robot.get_link_tf_frame(gripper_name))
 
-            pre_grasp = object_pose_in_gripper.copy()
-            pre_grasp.pose.position.x -= 0.1
+            object_pose_in_torso = lt.transform_pose(object_pose, BulletWorld.robot.get_link_tf_frame(robot_description.torso_link))
 
-            MoveTCPMotion(pre_grasp, self.arm).resolve().perform()
+            pre_grasp = object_pose_in_torso.copy()
+            pre_grasp.pose.position.x -= 0.18
+
+            BulletWorld.current_bullet_world.add_vis_axis(pre_grasp)
+
+            MoveTCPMotion(pre_grasp, self.arm, allow_gripper_collision=True).resolve().perform()
             MoveGripperMotion("open", self.arm).resolve().perform()
 
-            MoveTCPMotion(object_pose, self.arm, allow_gripper_collision=True).resolve().perform()
-            MoveGripperMotion("close", self.arm, allow_gripper_collision=True).resolve().perform()
+            grasp_pose = object_pose_in_torso.copy()
+            grasp_pose.pose.position.x += 0.2
+
+            BulletWorld.current_bullet_world.add_vis_axis(object_pose)
+            MoveTCPMotion(grasp_pose, self.arm, allow_gripper_collision=True).resolve().perform()
+            MoveGripperMotion("close", self.arm).resolve().perform()
+            BulletWorld.current_bullet_world.remove_vis_axis()
 
         def to_sql(self) -> ORMGraspingAction:
             return ORMGraspingAction(self.arm)
@@ -931,4 +942,4 @@ class GraspingAction(ActionDesignatorDescription):
 
         :return: A performable action designator that contains specific arguments
         """
-        return self.Action(self.arms[0], self.object_description.resolve())
+        return self.Action(self.arms[0], self.object_description)

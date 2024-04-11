@@ -1,3 +1,5 @@
+import time
+
 from pycram.designators.action_designator import *
 from pycram.designators.location_designator import *
 from pycram.designators.object_designator import *
@@ -13,7 +15,7 @@ world = BulletWorld()
 robot = Object("pr2", ObjectType.ROBOT, "pr2_calibrated_with_ft.urdf", pose=Pose([1, 2, 0]))
 apartment = Object("apartment", ObjectType.ENVIRONMENT, "apartment.urdf")
 
-cereal = Object("cereal", ObjectType.BREAKFAST_CEREAL, "breakfast_cereal.stl", pose=Pose([0.3, 3.3, 1.5], [0, 0, 1, 0]), color=[0, 1, 0, 1])
+# cereal = Object("cereal", ObjectType.BREAKFAST_CEREAL, "breakfast_cereal.stl", pose=Pose([0.3, 3.3, 1.5], [0, 0, 1, 0]), color=[0, 1, 0, 1])
 spoon = Object("spoon", ObjectType.SPOON, "spoon.stl", pose=Pose([2.4, 2.2, 0.85]), color=[0, 0, 1, 1])
 bowl = Object("bowl", ObjectType.BOWL, "bowl.stl", pose=Pose([2.5, 2.2, 1.02]), color=[1, 1, 0, 1])
 cup = Object("cup", ObjectType.JEROEN_CUP, "jeroen_cup.stl", pose=Pose([2.5, 2.2, 1.02]), color=[1, 1, 0, 1])
@@ -30,7 +32,7 @@ r = RobotStateUpdater("/tf", "/joint_states")
 with real_robot:
     ParkArmsAction([Arms.BOTH]).resolve().perform()
 
-    # MoveTorsoAction([0.33]).resolve().perform()
+    MoveTorsoAction([0.33]).resolve().perform()
     #
     # #Finding and navigating to the drawer holding the spoon
     # handle_desig = ObjectPart(names=["handle_cab10_t"], part_of=apartment_desig.resolve())
@@ -68,37 +70,43 @@ with real_robot:
     # ParkArmsAction([Arms.BOTH]).resolve().perform()
 
     
-    #
-    # apartment.set_joint_state("cabinet4_door_top_top_joint", 2)
-    # apartment_kitchen.open("Oberschrank")
 
-    
-    # NavigateAction([Pose([1.4, 3.3, 0], [0, 0, 1, 0])]).resolve().perform()
-    
-    # # Detect and pickup the cereal
-    # cabinet_pose = apartment.get_link_pose("cabinet4")
-    # cabinet_pose.position.z -= 0.25
-    # LookAtAction([cabinet_pose]).resolve().perform()
-    
-    # cereal_desig = DetectAction(BelieveObject(types=[ObjectType.JEROEN_CUP])).resolve().perform()
-    
-    # NavigateAction([Pose([1, 3.3, 0], [0, 0, 1, 0])]).resolve().perform()
-    
-    # PickUpAction(cereal_desig, ["left"], ["front"]).resolve().perform()
+    apartment.set_joint_state("cabinet4_door_top_top_joint", 2)
+    apartment_kitchen.open("Oberschrank")
 
+    NavigateAction([Pose([1.35, 3.3, 0], [0, 0, 1, 0])]).resolve().perform()
+    
+    # Detect and pickup the cereal
+    cabinet_pose = apartment.get_link_pose("cabinet4")
+    cabinet_pose.position.z -= 0.33
+    LookAtAction([cabinet_pose]).resolve().perform()
+    
+    cereal_desig = DetectAction(BelieveObject(types=[ObjectType.JEROEN_CUP])).resolve().perform()
+    
+    NavigateAction([Pose([1, 3.3, 0], [0, 0, 1, 0])]).resolve().perform()
+    
+    GraspingAction(["left"], cereal_desig).resolve().perform()
+    robot.attach(cup, link="l_gripper_tool_frame")
 
-    #
-    # ParkArmsAction([Arms.BOTH]).resolve().perform()
-    #
-    # cereal_target_pose = Pose([2.36, 2.4, 1.02])
-    #
-    # placing_loc = CostmapLocation(target=cereal_target_pose, reachable_for=robot_desig.resolve(),
-    #                               reachable_arm="left").resolve()
-    #
+    NavigateAction([Pose([1.4, 3.3, 0], [0, 0, 1, 0])]).resolve().perform()
+
+    ParkArmsAction([Arms.BOTH]).resolve().perform()
+
+    # apartment.set_joint_state("cabinet4_door_top_top_joint", 0)
+    # apartment_kitchen.close("Oberschrank")
+
+    cereal_target_pose = Pose([2.4, 2.4, 1.02])
+    print("before costmap")
+    placing_loc = CostmapLocation(target=cereal_target_pose, reachable_for=robot_desig.resolve(),
+                                  reachable_arm="left").resolve()
+    print("after costmap")
+
+    NavigateAction([placing_loc.pose]).resolve().perform()
     # NavigateAction([placing_loc.pose]).resolve().perform()
-    #
-    # PlaceAction(cereal_desig, [cereal_target_pose], ["left"]).resolve().perform()
-    #
-    # ParkArmsAction([Arms.BOTH]).resolve().perform()
+    # NavigateAction([placing_loc.pose]).resolve().perform()
+
+    PlaceAction(cereal_desig, [Pose([2.36, 2.4, 1.02])], ["left"]).resolve().perform()
+
+    ParkArmsAction([Arms.BOTH]).resolve().perform()
 
 

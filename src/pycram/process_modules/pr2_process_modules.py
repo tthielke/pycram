@@ -322,8 +322,8 @@ class Pr2DetectingReal(ProcessModule):
         lt = LocalTransformer()
         obj_pose = lt.transform_pose(obj_pose, BulletWorld.robot.get_link_tf_frame("torso_lift_link"))
         obj_pose.orientation = [0, 0, 0, 1]
-        obj_pose.position.x -= 0.1
-        #obj_pose.position.z -= 0.05
+        obj_pose.position.x -= 0.0
+        obj_pose.position.z += 0.05
 
         bullet_obj = BulletWorld.current_bullet_world.get_objects_by_type(designator.object_type)
         if bullet_obj:
@@ -354,8 +354,10 @@ class Pr2MoveTCPReal(ProcessModule):
 
         if designator.allow_gripper_collision:
             giskard.allow_gripper_collision(designator.arm)
+            giskard.giskard_wrapper.allow_all_collisions()
+        #giskard.giskard_wrapper.set_cart_goal(giskard._pose_to_pose_stamped(pose_in_map), robot_description.base_link, "map")
         giskard.achieve_cartesian_goal(pose_in_map, robot_description.get_tool_frame(designator.arm),
-                                       robot_description.base_link)
+                                       "torso_lift_link")
 
 
 class Pr2MoveArmJointsReal(ProcessModule):
